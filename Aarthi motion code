@@ -1,0 +1,53 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class AarthiMotion : MonoBehaviour
+{
+    public Transform idolCenter;
+    public float radius = 0.5f;
+    public float speed = 1f;
+    public float duration = 5f;
+
+    private PlayerInputActions inputActions;
+    private bool isAarthiActive = false;
+
+    private Quaternion initialRotation;
+
+    private void Awake()
+    {
+        inputActions = new PlayerInputActions();
+        inputActions.Gameplay.PerformAarthi.performed += ctx => StartCoroutine(PerformAarthi());
+
+        initialRotation = transform.rotation;
+    }
+
+    private void OnEnable() => inputActions.Enable();
+    private void OnDisable() => inputActions.Disable();
+
+    private System.Collections.IEnumerator PerformAarthi()
+    {
+        if (isAarthiActive) yield break;
+        isAarthiActive = true;
+
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float angle = elapsed * speed * Mathf.PI * 2f;
+
+            // 🔁 Reverse sign on Sin() to make clockwise
+            float y = Mathf.Cos(angle) * radius;
+            float z = -Mathf.Sin(angle) * radius;  // <- 🔁 Negative for clockwise
+
+            Vector3 center = idolCenter.position;
+            transform.position = center + new Vector3(0, y, z);
+
+            transform.rotation = initialRotation;
+
+            yield return null;
+        }
+
+        isAarthiActive = false;
+    }
+}
