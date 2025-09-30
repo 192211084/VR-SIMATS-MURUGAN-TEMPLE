@@ -1,0 +1,49 @@
+using UnityEngine;
+
+public class DayNightCycle : MonoBehaviour
+{
+    public Light sun;
+    public float dayDuration = 60f; // Seconds for full rotation
+    public Gradient lightColor; // Assign from Inspector
+    public AnimationCurve lightIntensity; // Assign from Inspector
+    public Material skyboxMaterial;
+
+    private float time;
+
+    void Update()
+    {
+        // Advance time
+        time += Time.deltaTime / dayDuration;
+        time %= 1f;
+
+        float rotation = time * 360f;
+
+        // Rotate the sun
+        sun.transform.rotation = Quaternion.Euler(new Vector3(rotation - 90f, 170f, 0));
+
+        // Set sun color and intensity
+        sun.color = lightColor.Evaluate(time);
+        sun.intensity = lightIntensity.Evaluate(time);
+
+        // Set ambient light based on sun intensity (this is what was missing!)
+        RenderSettings.ambientLight = sun.color * sun.intensity * 0.5f;
+
+        // Optional: make ambient light dim more at night
+        if (sun.intensity < 0.2f)
+        {
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+            RenderSettings.ambientLight = Color.black;
+        }
+        else
+        {
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+            RenderSettings.ambientLight = sun.color * sun.intensity * 0.5f;
+        }
+
+        // Rotate skybox
+        if (skyboxMaterial != null && skyboxMaterial.HasProperty("_Rotation"))
+        {
+            skyboxMaterial.SetFloat("_Rotation", rotation);
+        }
+    }
+}
