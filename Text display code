@@ -1,0 +1,39 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class ToggleParivarText : MonoBehaviour
+{
+    [Header("Assign in Inspector")]
+    public GameObject textObject;      // TextMeshPro text GameObject
+    public GameObject backgroundPanel; // UI Panel or Quad used as background
+
+    private PlayerInputActions inputActions;
+    private bool isVisible = false;
+
+    private void Awake()
+    {
+        inputActions = new PlayerInputActions();
+        inputActions.UI.ToggleText.performed += ctx => ToggleText();
+    }
+
+    private void OnEnable()
+    {
+        inputActions.UI.Enable();
+    }
+
+    private void OnDisable()
+    {
+        inputActions.UI.Disable();
+    }
+
+    private void ToggleText()
+    {
+        isVisible = !isVisible;
+
+        if (textObject != null)
+            textObject.SetActive(isVisible);
+
+        if (backgroundPanel != null)
+            backgroundPanel.SetActive(isVisible);
+    }
+}
