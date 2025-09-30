@@ -1,0 +1,108 @@
+using UnityEngine;
+
+public enum Season
+{
+    Summer,
+    Rainy,
+    Winter
+}
+
+public class SeasonManager : MonoBehaviour
+{
+    [Header("Season Settings")]
+    public Season currentSeason = Season.Summer;
+
+    [Header("Skyboxes")]
+    public Material summerSkybox;
+    public Material rainySkybox;
+    public Material winterSkybox;
+
+    [Header("Effects & Lighting")]
+    public GameObject rainEffect;
+    public Light sunLight;
+
+    [Header("Light Colors")]
+    public Color summerLightColor = Color.yellow;
+    public Color rainyLightColor = Color.gray;
+    public Color winterLightColor = new Color(0.8f, 0.9f, 1f);
+
+    [Header("Winter Fog Settings")]
+    public bool enableWinterFog = true;
+    public Color winterFogColor = new Color(0.85f, 0.9f, 1f, 1f);
+    public float winterFogDensity = 0.02f;
+
+    [Header("Day Night Cycle Link")]
+    public DayNightCycle dayNightCycle; // Drag the GameObject with DayNightCycle.cs here in Inspector
+
+    void Start()
+    {
+        ApplySeason(currentSeason);
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            ApplySeason(Season.Summer);
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            ApplySeason(Season.Rainy);
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            ApplySeason(Season.Winter);
+        }
+    }
+
+    public void ApplySeason(Season season)
+    {
+        currentSeason = season;
+
+        switch (season)
+        {
+            case Season.Summer:
+                RenderSettings.skybox = summerSkybox;
+                sunLight.color = summerLightColor;
+                rainEffect.SetActive(false);
+                RenderSettings.fog = false;
+
+                if (dayNightCycle != null)
+                    dayNightCycle.skyboxMaterial = summerSkybox;
+                break;
+
+            case Season.Rainy:
+                RenderSettings.skybox = rainySkybox;
+                sunLight.color = rainyLightColor;
+                rainEffect.SetActive(true);
+                RenderSettings.fog = false;
+
+                if (dayNightCycle != null)
+                    dayNightCycle.skyboxMaterial = rainySkybox;
+                break;
+
+            case Season.Winter:
+                RenderSettings.skybox = winterSkybox;
+                sunLight.color = winterLightColor;
+                rainEffect.SetActive(false);
+
+                if (enableWinterFog)
+                {
+                    RenderSettings.fog = true;
+                    RenderSettings.fogMode = FogMode.Exponential;
+                    RenderSettings.fogColor = winterFogColor;
+                    RenderSettings.fogDensity = winterFogDensity;
+                }
+                else
+                {
+                    RenderSettings.fog = false;
+                }
+
+                if (dayNightCycle != null)
+                    dayNightCycle.skyboxMaterial = winterSkybox;
+                break;
+        }
+
+        DynamicGI.UpdateEnvironment(); // Update environment lighting
+    }
+}
